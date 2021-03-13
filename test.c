@@ -30,9 +30,9 @@ static void q_free(struct list_head *q)
 {
     if (!q) return;
 
-    list_ele_t *current = list_entry(q->next, list_ele_t, list);
-    while (current) {
-        list_ele_t *tmp = current;
+    struct list_head *current = q->next;
+    while (current != q) {
+        list_ele_t *tmp = list_entry(current, list_ele_t, list);
         current = current->next;
         free(tmp->value);
         free(tmp);
@@ -55,7 +55,6 @@ bool q_insert_head(struct list_head *q, char *s)
     }
 
     newh->value = new_value;
-    newh->next = list_empty(q) ? NULL : list_entry(q->next, list_ele_t, list);
 
     newh->list.next = q->next;
     q->next->prev = &(newh->list);
