@@ -23,7 +23,6 @@ static queue_t *q_new()
     if (!q) return NULL;
 
     q->head = q->tail = NULL;
-    q->size = 0;
     INIT_LIST_HEAD(&q->list);
     return q;
 }
@@ -59,9 +58,8 @@ bool q_insert_head(queue_t *q, char *s)
     newh->value = new_value;
     newh->next = q->head;
     q->head = newh;
-    if (q->size == 0)
+    if (list_empty(&(q->list)))
         q->tail = newh;
-    q->size++;
     list_add_tail(&newh->list, &q->list);
 
     return true;

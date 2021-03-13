@@ -10,7 +10,6 @@ typedef struct __element {
 typedef struct {
     list_ele_t *head; /* Linked list of elements */
     list_ele_t *tail;
-    size_t size;
     struct list_head list;
 } queue_t;
 
