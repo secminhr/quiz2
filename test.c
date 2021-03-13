@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include "sort.h"
 
-static bool validate(queue_t *q)
+static bool validate(struct list_head *q)
 {
     struct list_head *node;
-    list_for_each (node, &q->list) {
-        if (node->next == &q->list)
+    list_for_each (node, q) {
+        if (node->next == q)
             break;
         if (strcmp(list_entry(node, list_ele_t, list)->value,
                    list_entry(node->next, list_ele_t, list)->value) > 0)
@@ -17,21 +17,20 @@ static bool validate(queue_t *q)
     return true;
 }
 
-static queue_t *q_new()
+static struct list_head *q_new()
 {
-    queue_t *q = malloc(sizeof(queue_t));
+    struct list_head *q = malloc(sizeof(struct list_head));
     if (!q) return NULL;
 
-    q->head = q->tail = NULL;
-    INIT_LIST_HEAD(&q->list);
+    INIT_LIST_HEAD(q);
     return q;
 }
 
-static void q_free(queue_t *q)
+static void q_free(struct list_head *q)
 {
     if (!q) return;
 
-    list_ele_t *current = q->head;
+    list_ele_t *current = list_entry(q->next, list_ele_t, list);
     while (current) {
         list_ele_t *tmp = current;
         current = current->next;
@@ -41,7 +40,7 @@ static void q_free(queue_t *q)
     free(q);
 }
 
-bool q_insert_head(queue_t *q, char *s)
+bool q_insert_head(struct list_head *q, char *s)
 {
     if (!q) return false;
 
@@ -56,11 +55,12 @@ bool q_insert_head(queue_t *q, char *s)
     }
 
     newh->value = new_value;
-    newh->next = q->head;
-    q->head = newh;
-    if (list_empty(&(q->list)))
-        q->tail = newh;
-    list_add_tail(&newh->list, &q->list);
+    newh->next = list_empty(q) ? NULL : list_entry(q->next, list_ele_t, list);
+
+    newh->list.next = q->next;
+    q->next->prev = &(newh->list);
+    newh->list.prev = q;
+    q->next = &(newh->list);
 
     return true;
 }
@@ -73,7 +73,7 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    queue_t *q = q_new();
+    struct list_head *q = q_new();
     char buf[256];
     while (fgets(buf, 256, fp))
         q_insert_head(q, buf);
